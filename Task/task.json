@@ -1,0 +1,69 @@
+{
+    "id": "e6b49154-896e-475d-ab12-c5646c6abd5c",
+    "name": "JingetQueryExecutor",
+    "friendlyName": "Jinget Query Executor",
+    "description": "Executes TSQL queries using sqlcmd command",
+    "helpMarkDown": "More information: contact farahmandian2011@gmail.com", 
+	"category": "Package",
+    "author": "Vahid Farahmandian",
+    "version": {
+        "Major": 1,
+        "Minor": 0,
+        "Patch": 1
+    },
+    "minimumAgentVersion": "1.0.0",
+    "instanceNameFormat": "JingetQueryExecutor",
+    "inputs": [
+		{
+            "name": "basePath",
+            "type": "filePath",
+            "label": "root folder",
+            "helpMarkDown": "root folder contains scripts folder(To be Executed, Executed, Results)",
+            "required": true,
+			"defaultValue" : ""
+        },
+		{
+            "name": "instance",
+            "type": "string",
+            "label": "SQL Server instance",
+            "helpMarkDown": "",
+            "required": true,
+			"defaultValue" : ""
+        },
+		{
+            "name": "authType",
+            "type": "pickList",
+            "label": "SQL Server Authentication Type",
+            "helpMarkDown": "",
+            "required": true,
+  		    "options": {
+				"sql": "SQL Server Authentication",
+				"Integrated": "Windows Authentication",
+		   }
+		},
+		{
+            "name": "dbUser",
+            "type": "string",
+            "label": "Database login name",
+            "helpMarkDown": "for integrated authentication this parameter is optional",
+            "required": false,
+			"defaultValue" : ""
+        },
+		{
+            "name": "dbPassword",
+            "type": "string",
+            "label": "Database login password",
+            "helpMarkDown": "for integrated authentication this parameter is optional",
+            "required": false,
+			"defaultValue" : ""
+        }
+		
+    ],
+    "execution": {
+        "PowerShell": {
+            "target": "$(currentDirectory)\\exec.ps1",
+            "argumentFormat": "",
+            "workingDirectory": ""
+        }
+    }
+}

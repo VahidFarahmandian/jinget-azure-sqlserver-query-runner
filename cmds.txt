@@ -1,0 +1,1 @@
+create or update extension: tfx extension create --manifest-globs vss-extension.json

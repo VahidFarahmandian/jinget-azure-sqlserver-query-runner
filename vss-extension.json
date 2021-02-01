@@ -1,0 +1,36 @@
+{
+    "manifestVersion": 1,
+    "id": "JingetQueryExecutor",
+    "name": "Jinget Query Executor",
+    "version": "1.0.1",
+    "publisher": "VahidFarahmandian",
+    "targets": [
+        {
+            "id": "Microsoft.VisualStudio.Services"
+        }
+    ],    
+    "description": "Executes TSQL queries using sqlcmd command",
+    "categories": [
+        "Azure Pipelines"
+    ],
+    "icons": {
+        "default": "images/extension-icon.png"        
+    },
+    "files": [
+        {
+            "path": "Task"
+        }
+    ],
+    "contributions": [
+        {
+            "id": "JingetQueryExecutor",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "Task"
+            }
+        }
+    ]
+}
