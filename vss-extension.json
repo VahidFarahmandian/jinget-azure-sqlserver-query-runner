@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "JingetQueryExecutor",
     "name": "Jinget Query Executor",
-    "version": "1.0.1",
+    "version": "2.0.1",
     "publisher": "VahidFarahmandian",
     "targets": [
         {

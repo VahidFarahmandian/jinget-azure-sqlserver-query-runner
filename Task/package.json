@@ -2,7 +2,7 @@
   "name": "jinget-query-executer",
   "version": "1.0.0",
   "description": "Executes TSQL queries using sqlcmd command",
-  "main": "exec.ps1",
+  "main": "JingetQueryExecuter.ps1",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

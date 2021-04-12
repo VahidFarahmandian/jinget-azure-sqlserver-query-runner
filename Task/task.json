@@ -3,65 +3,82 @@
     "name": "JingetQueryExecutor",
     "friendlyName": "Jinget Query Executor",
     "description": "Executes TSQL queries using sqlcmd command",
-    "helpMarkDown": "More information: contact farahmandian2011@gmail.com", 
-	"category": "Package",
+    "helpMarkDown": "More information: contact farahmandian2011@gmail.com",
+    "category": "Package",
     "author": "Vahid Farahmandian",
     "version": {
-        "Major": 1,
+        "Major": 2,
         "Minor": 0,
         "Patch": 1
     },
     "minimumAgentVersion": "1.0.0",
     "instanceNameFormat": "JingetQueryExecutor",
     "inputs": [
-		{
+        {
             "name": "basePath",
             "type": "filePath",
             "label": "root folder",
             "helpMarkDown": "root folder contains scripts folder(To be Executed, Executed, Results)",
             "required": true,
-			"defaultValue" : ""
+            "defaultValue": ""
         },
-		{
+        {
+            "name": "outputPath",
+            "type": "filePath",
+            "label": "output folder",
+            "helpMarkDown": "output folder which will hold the results)",
+            "required": false,
+            "defaultValue": ""
+        },
+        {
             "name": "instance",
             "type": "string",
             "label": "SQL Server instance",
             "helpMarkDown": "",
             "required": true,
-			"defaultValue" : ""
+            "defaultValue": ""
         },
-		{
+        {
             "name": "authType",
             "type": "pickList",
             "label": "SQL Server Authentication Type",
             "helpMarkDown": "",
             "required": true,
-  		    "options": {
-				"sql": "SQL Server Authentication",
-				"Integrated": "Windows Authentication",
-		   }
-		},
-		{
+            "options": {
+                "SQL": "SQL Server Authentication",
+                "Integrated": "Windows Authentication",
+            }
+        },
+        {
             "name": "dbUser",
             "type": "string",
             "label": "Database login name",
             "helpMarkDown": "for integrated authentication this parameter is optional",
             "required": false,
-			"defaultValue" : ""
+            "defaultValue": "",
+            "visibleRule": "authType = SQL"
         },
-		{
+        {
             "name": "dbPassword",
             "type": "string",
             "label": "Database login password",
             "helpMarkDown": "for integrated authentication this parameter is optional",
             "required": false,
-			"defaultValue" : ""
+            "defaultValue": "",
+            "visibleRule": "authType = SQL"
+        },
+        {
+            "name": "resultRetentionDays",
+            "type": "string",
+            "label": "result retention in days",
+            "helpMarkDown": "files older than this value, will removed",
+            "required": false,
+            "defaultValue": "0"
         }
-		
     ],
     "execution": {
         "PowerShell": {
-            "target": "$(currentDirectory)\\exec.ps1",
+            "target": "$(currentDirectory)\\JingetQueryExecuter.ps1",
             "argumentFormat": "",
             "workingDirectory": ""
         }
