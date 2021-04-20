@@ -54,7 +54,7 @@ $problematicScriptsPath =  $($basePath)+"Errors"
 
 #remove older files
 if( $resultRetentionDays -gt 0){
-    Get-ChildItem –Path $resultPath -Recurse | Where-Object {($_.LastWriteTime -lt (Get-Date).AddDays($resultRetentionDays*-1))} | Remove-Item
+    Get-ChildItem –Path $resultPath -Recurse | Where-Object {($_.LastWriteTime -lt (Get-Date).AddDays($resultRetentionDays*-1) -and $_.Extension -ne '.md')} | Remove-Item
 }
 
 if($dbName -eq '')
@@ -69,13 +69,11 @@ if(!(Test-Path $destinationpath -ErrorAction Ignore)){
     mkdir $destinationpath
 }
 if(!(Test-Path $resultPath -ErrorAction Ignore)){
-    mkdir $resultPath
+	New-Item -Path "$($resultPath)README.md" -ItemType File -Force
 }
 if(!(Test-Path $problematicScriptsPath -ErrorAction Ignore)){
     mkdir $problematicScriptsPath
 }
-
-Write-Output $problematicScriptsPath
 
 Import-Module SQLPS
 
