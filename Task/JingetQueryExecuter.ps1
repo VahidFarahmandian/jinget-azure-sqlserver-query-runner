@@ -5,10 +5,6 @@ Param
     [String] 
     $basePath,
 	
-	[Parameter(Mandatory = $False)]
-    [String]
-    $outputPath,
-
     [Parameter(Mandatory = $True)]
     [String] 
     $instance,
@@ -19,7 +15,7 @@ Param
 
     [Parameter(Mandatory = $False)]
     [String] 
-    $dbName,
+    $dbName = "master",
 
     [Parameter(Mandatory = $False)]
     [String] 
@@ -31,36 +27,31 @@ Param
 
     [Parameter(Mandatory = $False)]
     [Int32] 
-    $resultRetentionDays
+    $resultRetentionDays,
+
+    [Parameter(Mandatory = $True)]
+    [String] 
+    $environment
 )
 
-if ($basePath -notmatch '\\$')
-{
-    $basePath += '\'
+if($environment -eq "staging"){
+    $sourcePath = Join-Path $($basePath) "To Be Executed" 
+    $destinationpath = Join-Path $($basePath) "To Production"
+    $resultPath = Join-Path $($basePath) "Staging Results/"
+    $problematicScriptsPath = Join-Path  $($basePath) "Staging Errors"
 }
-if($outputPath -eq '')
-{
-    $outputPath = $basePath
+else{
+    $sourcePath = Join-Path $($basePath) "To Production" 
+    $destinationpath = Join-Path $($basePath) "Production Executed"
+    $resultPath = Join-Path $($basePath) "Production Results/"
+    $problematicScriptsPath = Join-Path $($basePath) "Production Errors"
 }
-elseif ($outputPath -notmatch '\\$')
-{
-    $outputPath += '\'
-}
-
-$sourcePath = $($basePath)+"To Be Executed" 
-$destinationpath =  $($basePath)+"Executed"
-$resultPath = $($outputPath)+"Results\"
-$problematicScriptsPath =  $($basePath)+"Errors"
 
 #remove older files
 if( $resultRetentionDays -gt 0){
     Get-ChildItem –Path $resultPath -Recurse | Where-Object {($_.LastWriteTime -lt (Get-Date).AddDays($resultRetentionDays*-1) -and $_.Extension -ne '.md')} | Remove-Item
 }
 
-if($dbName -eq '')
-{
-    $dbName = "master"
-}
 
 if(!(Test-Path $sourcePath -ErrorAction Ignore)){
     mkdir $sourcePath
