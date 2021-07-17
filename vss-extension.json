@@ -2,14 +2,14 @@
     "manifestVersion": 1,
     "id": "JingetQueryExecutor",
     "name": "Jinget Query Executor",
-    "version": "2.0.4",
+    "version": "2.0.12",
     "publisher": "VahidFarahmandian",
     "targets": [
         {
             "id": "Microsoft.VisualStudio.Services"
         }
     ],    
-    "description": "Executes TSQL queries using sqlcmd command",
+    "description": "Executes TSQL queries",
     "categories": [
         "Azure Pipelines"
     ],

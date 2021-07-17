@@ -2,7 +2,7 @@
     "id": "e6b49154-896e-475d-ab12-c5646c6abd5c",
     "name": "JingetQueryExecutor",
     "friendlyName": "Jinget Query Executor",
-    "description": "Executes TSQL queries using sqlcmd command",
+    "description": "Executes TSQL queries",
     "helpMarkDown": "More information: contact farahmandian2011@gmail.com",
     "category": "Package",
     "author": "Vahid Farahmandian",
@@ -26,7 +26,6 @@
             "name": "instance",
             "type": "string",
             "label": "SQL Server instance",
-            "helpMarkDown": "",
             "required": true,
             "defaultValue": ""
         },
@@ -34,7 +33,6 @@
             "name": "authType",
             "type": "pickList",
             "label": "SQL Server Authentication Type",
-            "helpMarkDown": "",
             "required": true,
             "options": {
                 "SQL": "SQL Server Authentication",
@@ -71,17 +69,40 @@
             "name": "environment",
             "type": "pickList",
             "label": "Execution Environment",
-            "helpMarkDown": "",
             "required": true,
             "options": {
                 "staging": "Staging",
-                "production": "Production",
+                "production": "Production"
             }
         },
+        {
+            "name": "elasticLogEnabled",
+            "type": "boolean",
+            "label": "Log to Elastic?"
+        },
+        {
+            "name": "elasticUrl",
+            "type": "string",
+            "label": "Elastic URL",
+            "defaultValue": "",
+            "visibleRule": "elasticLogEnabled = true"
+        },
+        {
+            "name": "elasticUsername",
+            "type": "string",
+            "label": "Elstic username",
+            "visibleRule": "elasticLogEnabled = true"
+        },
+        {
+            "name": "elasticPassword",
+            "type": "string",
+            "label": "Elastic password",
+            "visibleRule": "elasticLogEnabled = true"
+        }
     ],
     "execution": {
         "PowerShell": {
-            "target": "$(currentDirectory)\\JingetQueryExecuter.ps1",
+            "target": "$(currentDirectory)\\JingetQueryExecutor.ps1",
             "argumentFormat": "",
             "workingDirectory": ""
         }

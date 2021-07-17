@@ -1,5 +1,4 @@
-﻿
-Param
+﻿Param
 (
     [Parameter(Mandatory = $True)]
     [String] 
@@ -31,8 +30,70 @@ Param
 
     [Parameter(Mandatory = $True)]
     [String] 
-    $environment
+    $environment,
+
+    [Parameter(Mandatory = $True)]
+    [String] 
+    $elasticLogEnabled='false',
+
+    [Parameter(Mandatory = $False)]
+    [String] 
+    $elasticUrl="",
+
+    [Parameter(Mandatory = $False)]
+    [String] 
+    $elasticUsername,
+
+    [Parameter(Mandatory = $False)]
+    [String] 
+    $elasticPassword
 )
+
+function LogToElastic{
+    Param($requestId, $content, $status, $currentPath)
+
+    if($elasticLogEnabled -eq 'true'){
+        
+        $data = @{
+            Request = @{
+                Id = $requestId
+                FileName = $filename.FullName
+                DateTime = $requestDateTime
+                Environment = $environment
+            }
+            Response = @{
+                Content = $content
+                Status = $status
+                DateTime = (Get-Date -Format "yyyy-MM-dd HH:mm:ss.fff")
+            }
+            DbOptions = @{
+                Instance = $instance
+                Database = $dbName
+                Username = $dbuser
+                AuthenticationType = $authType
+            }    
+        }
+
+        $indexName = 'jinget.query.executer'
+        $elasticUrl = $elasticUrl+'/'+$indexName
+        $headers = @{
+            'Authorization' = 'Basic ' + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$($elasticUsername):$($elasticPassword)"))
+        }
+        try{
+            Invoke-RestMethod -Method Get -Headers $headers -Uri $elasticUrl
+        }
+        catch{
+            if($_.Exception.Response.StatusCode.value__ -ge 300){
+                Invoke-RestMethod -Method Put -Headers $headers -Uri $elasticUrl
+            }
+        }
+
+        $elasticUrl = $elasticUrl+'/_doc'
+        $jsonData = ConvertTo-Json $data -Compress
+        
+        Invoke-RestMethod -Method Post -Headers $headers -Uri $elasticUrl -Body $jsonData -ContentType 'application/json; charset=utf-8' 
+    }
+}
 
 if($environment -eq "staging"){
     $sourcePath = Join-Path $($basePath) "To Be Executed" 
@@ -70,7 +131,11 @@ Import-Module SQLPS
 
 foreach ($filename in get-childitem -path $sourcePath -filter "*.sql")
 {
+    $requestId = New-Guid
+
     $Error.Clear()
+
+    $requestDateTime = (Get-Date -Format "yyyy-MM-dd HH:mm:ss.fff")
 
     try {
         if($authType -eq "sql"){
@@ -80,9 +145,16 @@ foreach ($filename in get-childitem -path $sourcePath -filter "*.sql")
             $queryResult = Invoke-Sqlcmd -OutputAs DataSet -ErrorAction Stop -InputFile $filename.FullName -Database $dbName -ServerInstance $instance 
         }
         
+        $jsonResult = ''
+
         for ($i = 0; $i -lt $queryResult.Tables.Count; ++$i) {
            $resultFile = "$($resultPath)$($filename.BaseName)_Query#$($i+1).csv"
            $queryResult.Tables[$i] | Export-Csv -NoTypeInformation -Path $resultFile -Encoding UTF8 -Append
+
+           $jsonResult = ($queryResult.Tables[$i] | select $queryResult.Tables[$i].Columns.ColumnName ) | ConvertTo-Json -Compress
+
+           LogToElastic $requestId $jsonResult 'Success'
+
         }
         
         Move-Item -Path $filename.FullName -Destination $destinationpath
@@ -96,6 +168,10 @@ foreach ($filename in get-childitem -path $sourcePath -filter "*.sql")
             if($Error[$i].CategoryInfo.Activity -eq "Invoke-Sqlcmd")
             {
                 $Error[$i].Exception | Out-File -FilePath $resultFile -Append -Encoding UTF8
+                
+                $jsonResult = ConvertTo-Json $Error[$i].Exception -Compress
+ 
+                LogToElastic $requestId $jsonResult 'Failed'
             }
         }
         Move-Item -Path $filename.FullName -Destination $problematicScriptsPath
