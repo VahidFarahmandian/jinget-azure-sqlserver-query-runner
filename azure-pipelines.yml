@@ -15,7 +15,7 @@ steps:
 - task: QueryAzureDevOpsExtensionVersion@3
   inputs:
     connectTo: VsTeam
-    connectedServiceNameTFS: 'VS marketplace'
+    connectedServiceName: 'VS marketplace'
     publisherId: 'VahidFarahmandian'
     extensionId: 'JingetQueryExecutor'
     versionAction: 'Patch'
