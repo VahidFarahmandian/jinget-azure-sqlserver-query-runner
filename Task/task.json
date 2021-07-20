@@ -4,15 +4,36 @@
     "friendlyName": "Jinget Query Executor",
     "description": "Executes TSQL queries",
     "helpMarkDown": "More information: contact farahmandian2011@gmail.com",
-    "category": "Package",
+    "category": "Utility",
     "author": "Vahid Farahmandian",
     "version": {
-        "Major": 2,
+        "Major": 5,
         "Minor": 0,
-        "Patch": 4
+        "Patch": 0
     },
+    "visibility": [
+        "Build",
+        "Release"
+    ],
     "minimumAgentVersion": "1.0.0",
-    "instanceNameFormat": "JingetQueryExecutor",
+    "instanceNameFormat": "Execute queries on $(instance)",
+    "groups": [
+        {
+            "name": "databaseOptions",
+            "displayName": "Database Options",
+            "isExpanded": true
+        },
+        {
+            "name": "elasticOptions",
+            "displayName": "Elastic Search Options",
+            "isExpanded": false
+        },
+        {
+            "name": "gitOptions",
+            "displayName": "Git Options",
+            "isExpanded": false
+        }
+    ],
     "inputs": [
         {
             "name": "basePath",
@@ -23,49 +44,6 @@
             "defaultValue": ""
         },
         {
-            "name": "instance",
-            "type": "string",
-            "label": "SQL Server instance",
-            "required": true,
-            "defaultValue": ""
-        },
-        {
-            "name": "authType",
-            "type": "pickList",
-            "label": "SQL Server Authentication Type",
-            "required": true,
-            "options": {
-                "SQL": "SQL Server Authentication",
-                "Integrated": "Windows Authentication",
-            }
-        },
-        {
-            "name": "dbUser",
-            "type": "string",
-            "label": "Database login name",
-            "helpMarkDown": "for integrated authentication this parameter is optional",
-            "required": false,
-            "defaultValue": "",
-            "visibleRule": "authType = SQL"
-        },
-        {
-            "name": "dbPassword",
-            "type": "string",
-            "label": "Database login password",
-            "helpMarkDown": "for integrated authentication this parameter is optional",
-            "required": false,
-            "defaultValue": "",
-            "visibleRule": "authType = SQL"
-        },
-        {
-            "name": "resultRetentionDays",
-            "type": "string",
-            "label": "result retention in days",
-            "helpMarkDown": "files older than this value, will removed",
-            "required": false,
-            "defaultValue": "0"
-        },
-		{
             "name": "environment",
             "type": "pickList",
             "label": "Execution Environment",
@@ -76,28 +54,101 @@
             }
         },
         {
+            "name": "resultRetentionDays",
+            "type": "string",
+            "label": "result retention in days",
+            "helpMarkDown": "files older than this value, will removed",
+            "required": false,
+            "defaultValue": "0"
+        },
+        {
+            "name": "instance",
+            "type": "string",
+            "label": "SQL Server instance",
+            "required": true,
+            "defaultValue": "",
+            "groupName":"databaseOptions"
+        },
+        {
+            "name": "authType",
+            "type": "pickList",
+            "label": "SQL Server Authentication Type",
+            "required": true,
+            "options": {
+                "SQL": "SQL Server Authentication",
+                "Integrated": "Windows Authentication"
+            },
+            "groupName":"databaseOptions"
+        },
+        {
+            "name": "dbName",
+            "type": "string",
+            "label": "Database name",
+            "required": false,
+            "defaultValue": "",
+            "groupName":"databaseOptions"
+        },
+        {
+            "name": "dbUser",
+            "type": "string",
+            "label": "Database login name",
+            "helpMarkDown": "for integrated authentication this parameter is optional",
+            "required": false,
+            "defaultValue": "",
+            "visibleRule": "authType = SQL",
+            "groupName":"databaseOptions"
+        },
+        {
+            "name": "dbPassword",
+            "type": "string",
+            "label": "Database login password",
+            "helpMarkDown": "for integrated authentication this parameter is optional",
+            "required": false,
+            "defaultValue": "",
+            "visibleRule": "authType = SQL",
+            "groupName":"databaseOptions"
+        },
+        {
             "name": "elasticLogEnabled",
             "type": "boolean",
-            "label": "Log to Elastic?"
+            "label": "Log to Elastic?",
+            "groupName":"elasticOptions"
         },
         {
             "name": "elasticUrl",
             "type": "string",
             "label": "Elastic URL",
             "defaultValue": "",
-            "visibleRule": "elasticLogEnabled = true"
+            "visibleRule": "elasticLogEnabled = true",
+            "groupName":"elasticOptions"
         },
         {
             "name": "elasticUsername",
             "type": "string",
             "label": "Elstic username",
-            "visibleRule": "elasticLogEnabled = true"
+            "visibleRule": "elasticLogEnabled = true",
+            "groupName":"elasticOptions"
         },
         {
             "name": "elasticPassword",
             "type": "string",
             "label": "Elastic password",
-            "visibleRule": "elasticLogEnabled = true"
+            "visibleRule": "elasticLogEnabled = true",
+            "groupName":"elasticOptions"
+        },
+        {
+            "name": "autoCommitEnabled",
+            "type": "boolean",
+            "label": "Auto commit changes?",
+            "groupName":"gitOptions"
+        },
+        {
+            "name": "autoCommitBranchName",
+            "type": "string",
+            "label": "Destination branch name",
+            "defaultValue": "master",
+            "visibleRule": "autoCommitEnabled = true",
+            "groupName":"gitOptions"
         }
     ],
     "execution": {

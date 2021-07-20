@@ -46,17 +46,36 @@
 
     [Parameter(Mandatory = $False)]
     [String] 
-    $elasticPassword
+    $elasticPassword,
+
+    [Parameter(Mandatory = $True)]
+    [String] 
+    $autoCommitEnabled='false',
+
+    [Parameter(Mandatory = $False)]
+    [String] 
+    $autoCommitBranchName='master'
 )
 
-function LogToElastic{
-    Param($requestId, $content, $status, $currentPath)
+function Commit{
+    Param()
+    if([System.Convert]::ToBoolean($autoCommitEnabled) -eq $True){
+		Set-Location -Path $basePath
+        $env:GIT_REDIRECT_STDERR = '2>&1'
+        git add --all
+        git commit -m "Committed by Jinget Query Executor"
+        git pull origin $autoCommitBranchName
+        git push origin head:$autoCommitBranchName
+    }
+}
 
-    if($elasticLogEnabled -eq 'true'){
+function LogToElastic{
+    Param($content, $status, $currentPath)
+
+    if([System.Convert]::ToBoolean($elasticLogEnabled) -eq $True){
         
         $data = @{
             Request = @{
-                Id = $requestId
                 FileName = $filename.FullName
                 DateTime = $requestDateTime
                 Environment = $environment
@@ -71,6 +90,10 @@ function LogToElastic{
                 Database = $dbName
                 Username = $dbuser
                 AuthenticationType = $authType
+            }
+            GitInfo = @{
+               CommitId = $env:Build_SourceVersion
+               Branch = $env:Build_SourceBranchName
             }    
         }
 
@@ -81,10 +104,13 @@ function LogToElastic{
         }
         try{
             Invoke-RestMethod -Method Get -Headers $headers -Uri $elasticUrl
+            Write-Output "Check if index exists"
         }
         catch{
             if($_.Exception.Response.StatusCode.value__ -ge 300){
+                Write-Output "Index doest not exist"
                 Invoke-RestMethod -Method Put -Headers $headers -Uri $elasticUrl
+                Write-Output "Index created"
             }
         }
 
@@ -92,51 +118,39 @@ function LogToElastic{
         $jsonData = ConvertTo-Json $data -Compress
         
         Invoke-RestMethod -Method Post -Headers $headers -Uri $elasticUrl -Body $jsonData -ContentType 'application/json; charset=utf-8' 
+        Write-Output "Operation logged in index successfully"
     }
 }
 
-if($environment -eq "staging"){
-    $sourcePath = Join-Path $($basePath) "To Be Executed" 
-    $destinationpath = Join-Path $($basePath) "To Production"
-    $resultPath = Join-Path $($basePath) "Staging Results/"
-    $problematicScriptsPath = Join-Path  $($basePath) "Staging Errors"
-}
-else{
-    $sourcePath = Join-Path $($basePath) "To Production" 
-    $destinationpath = Join-Path $($basePath) "Production Executed"
-    $resultPath = Join-Path $($basePath) "Production Results/"
-    $problematicScriptsPath = Join-Path $($basePath) "Production Errors"
+function RemoveOldFiles{
+    Param()
+    if( $resultRetentionDays -gt 0){
+        Get-ChildItem –Path $resultPath -Recurse | Where-Object {($_.LastWriteTime -lt (Get-Date).AddDays($resultRetentionDays*-1) -and $_.Extension -ne '.md')} | Remove-Item
+    }
 }
 
-#remove older files
-if( $resultRetentionDays -gt 0){
-    Get-ChildItem –Path $resultPath -Recurse | Where-Object {($_.LastWriteTime -lt (Get-Date).AddDays($resultRetentionDays*-1) -and $_.Extension -ne '.md')} | Remove-Item
+function CreateDirectories{
+    Param()
+    if(!(Test-Path $sourcePath -ErrorAction Ignore)){
+        mkdir $sourcePath
+    }
+    if(!(Test-Path $destinationpath -ErrorAction Ignore)){
+        mkdir $destinationpath
+    }
+    if(!(Test-Path $resultPath -ErrorAction Ignore)){
+	    New-Item -Path "$($resultPath)README.md" -ItemType File -Force
+    }
+    if(!(Test-Path $problematicScriptsPath -ErrorAction Ignore)){
+        mkdir $problematicScriptsPath
+    }
 }
 
-
-if(!(Test-Path $sourcePath -ErrorAction Ignore)){
-    mkdir $sourcePath
-}
-if(!(Test-Path $destinationpath -ErrorAction Ignore)){
-    mkdir $destinationpath
-}
-if(!(Test-Path $resultPath -ErrorAction Ignore)){
-	New-Item -Path "$($resultPath)README.md" -ItemType File -Force
-}
-if(!(Test-Path $problematicScriptsPath -ErrorAction Ignore)){
-    mkdir $problematicScriptsPath
-}
-
-Import-Module SQLPS
-
-foreach ($filename in get-childitem -path $sourcePath -filter "*.sql")
-{
-    $requestId = New-Guid
-
+function ExecuteQuery{
+    Param()
+    
     $Error.Clear()
 
     $requestDateTime = (Get-Date -Format "yyyy-MM-dd HH:mm:ss.fff")
-
     try {
         if($authType -eq "sql"){
             $queryResult = Invoke-Sqlcmd -OutputAs DataSet -ErrorAction Stop -InputFile $filename.FullName -Database $dbName -ServerInstance $instance -Username $dbUser -Password $dbPassword
@@ -153,7 +167,7 @@ foreach ($filename in get-childitem -path $sourcePath -filter "*.sql")
 
            $jsonResult = ($queryResult.Tables[$i] | select $queryResult.Tables[$i].Columns.ColumnName ) | ConvertTo-Json -Compress
 
-           LogToElastic $requestId $jsonResult 'Success'
+           LogToElastic $jsonResult 'Success'
 
         }
         
@@ -161,6 +175,7 @@ foreach ($filename in get-childitem -path $sourcePath -filter "*.sql")
     }
 
     catch [Microsoft.SqlServer.Management.PowerShell.SqlPowerShellSqlExecutionException] {
+        
         $resultFile = "$($resultPath)$($filename.BaseName)_Error.txt"
         
         for ($i = 0; $i -lt $Error.Count; ++$i) {
@@ -171,10 +186,35 @@ foreach ($filename in get-childitem -path $sourcePath -filter "*.sql")
                 
                 $jsonResult = ConvertTo-Json $Error[$i].Exception -Compress
  
-                LogToElastic $requestId $jsonResult 'Failed'
+                LogToElastic $jsonResult 'Failed'
             }
         }
         Move-Item -Path $filename.FullName -Destination $problematicScriptsPath
     }
     Write-Output "$($filename.FullName) EXECUTED. Check Results folder for possible error(s) or output(s)"    
+}
+
+if($environment -eq "staging"){
+    $sourcePath = Join-Path $($basePath) "To Be Executed" 
+    $destinationpath = Join-Path $($basePath) "To Production"
+    $resultPath = Join-Path $($basePath) "Staging Results/"
+    $problematicScriptsPath = Join-Path  $($basePath) "Staging Errors"
+}
+else{
+    $sourcePath = Join-Path $($basePath) "To Production" 
+    $destinationpath = Join-Path $($basePath) "Production Executed"
+    $resultPath = Join-Path $($basePath) "Production Results/"
+    $problematicScriptsPath = Join-Path $($basePath) "Production Errors"
+}
+
+RemoveOldFiles
+
+CreateDirectories
+
+Import-Module SQLPS
+
+foreach ($filename in get-childitem -path $sourcePath -filter "*.sql")
+{
+    ExecuteQuery
 } 
+Commit
