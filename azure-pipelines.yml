@@ -1,6 +1,5 @@
 pool:
-  name: Default
-  demands: npm
+  name: Afranet-Jinget-Pool
 
 trigger:
  branches:
