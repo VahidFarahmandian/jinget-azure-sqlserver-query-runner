@@ -72,7 +72,7 @@ function Commit{
 function LogToElastic{
     Param($content, $status, $currentPath)
 
-    if([System.Convert]::ToBoolean($elasticLogEnabled) -eq $True){
+     if([System.Convert]::ToBoolean($elasticLogEnabled) -eq $True){
         
         $data = @{
             Request = @{
@@ -149,9 +149,13 @@ function ExecuteQuery{
     Param()
     
     $Error.Clear()
-
+	$jsonResult = ''
     $requestDateTime = (Get-Date -Format "yyyy-MM-dd HH:mm:ss.fff")
+	
     try {
+		
+		Add-Content $filename.FullName "`n;SELECT @@ROWCOUNT AS EffectedRowsCount"
+		
         if($authType -eq "sql"){
             $queryResult = Invoke-Sqlcmd -OutputAs DataSet -ErrorAction Stop -InputFile $filename.FullName -Database $dbName -ServerInstance $instance -Username $dbUser -Password $dbPassword
         }    
@@ -159,18 +163,14 @@ function ExecuteQuery{
             $queryResult = Invoke-Sqlcmd -OutputAs DataSet -ErrorAction Stop -InputFile $filename.FullName -Database $dbName -ServerInstance $instance 
         }
         
-        $jsonResult = ''
+		for ($i = 0; $i -lt $queryResult.Tables.Count; ++$i) {
+			$resultFile = "$($resultPath)$($filename.BaseName)_Query#$($i+1).csv"
+			$queryResult.Tables[$i] | Export-Csv -NoTypeInformation -Path $resultFile -Encoding UTF8 -Append
 
-        for ($i = 0; $i -lt $queryResult.Tables.Count; ++$i) {
-           $resultFile = "$($resultPath)$($filename.BaseName)_Query#$($i+1).csv"
-           $queryResult.Tables[$i] | Export-Csv -NoTypeInformation -Path $resultFile -Encoding UTF8 -Append
-
-           $jsonResult = ($queryResult.Tables[$i] | select $queryResult.Tables[$i].Columns.ColumnName ) | ConvertTo-Json -Compress
-
-           LogToElastic $jsonResult 'Success'
-
-        }
-        
+			$jsonResult = ($queryResult.Tables[$i] | select $queryResult.Tables[$i].Columns.ColumnName ) | ConvertTo-Json -Compress
+		}
+		
+		LogToElastic $jsonResult 'Success'
         Move-Item -Path $filename.FullName -Destination $destinationpath
     }
 
