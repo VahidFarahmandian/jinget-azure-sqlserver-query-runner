@@ -154,7 +154,10 @@ function ExecuteQuery{
 	
     try {
 		
-		Add-Content $filename.FullName "`n;SELECT @@ROWCOUNT AS EffectedRowsCount"
+		$hasJingetInjected = Select-String -Path $filename.FullName -Pattern "/*Injected By Jinget*/ SELECT @@ROWCOUNT AS EffectedRowsCount /**/" -SimpleMatch -Quiet
+		if($hasJingetInjected -eq $False){
+			Add-Content $filename.FullName "`n GO `n /*Injected By Jinget*/ SELECT @@ROWCOUNT AS EffectedRowsCount /**/"
+		}
 		
         if($authType -eq "sql"){
             $queryResult = Invoke-Sqlcmd -OutputAs DataSet -ErrorAction Stop -InputFile $filename.FullName -Database $dbName -ServerInstance $instance -Username $dbUser -Password $dbPassword
@@ -172,6 +175,7 @@ function ExecuteQuery{
 		
 		LogToElastic $jsonResult 'Success'
         Move-Item -Path $filename.FullName -Destination $destinationpath
+		Write-Output "$($filename.FullName) EXECUTED. Check 'Results' folder for output(s)"    
     }
 
     catch [Microsoft.SqlServer.Management.PowerShell.SqlPowerShellSqlExecutionException] {
@@ -190,8 +194,9 @@ function ExecuteQuery{
             }
         }
         Move-Item -Path $filename.FullName -Destination $problematicScriptsPath
+		$hasError = $True
+		Write-Error "Executing $($filename.BaseName) Failed. Check 'Errors' folder for error(s)"    
     }
-    Write-Output "$($filename.FullName) EXECUTED. Check Results folder for possible error(s) or output(s)"    
 }
 
 if($environment -eq "staging"){
@@ -213,8 +218,13 @@ CreateDirectories
 
 Import-Module SQLPS
 
+$hasError = $False
+
 foreach ($filename in get-childitem -path $sourcePath -filter "*.sql")
 {
     ExecuteQuery
-} 
+}
 Commit
+if($hasError -eq $True){
+	exit(1)
+}
