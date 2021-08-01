@@ -170,7 +170,7 @@ function ExecuteQuery{
 			$resultFile = "$($resultPath)$($filename.BaseName)_Query#$($i+1).csv"
 			$queryResult.Tables[$i] | Export-Csv -NoTypeInformation -Path $resultFile -Encoding UTF8 -Append
 
-			$jsonResult = ($queryResult.Tables[$i] | select $queryResult.Tables[$i].Columns.ColumnName ) | ConvertTo-Json -Compress
+			$jsonResult += ($queryResult.Tables[$i] | select $queryResult.Tables[$i].Columns.ColumnName ) | ConvertTo-Json -Compress
 		}
 		
 		LogToElastic $jsonResult 'Success'
