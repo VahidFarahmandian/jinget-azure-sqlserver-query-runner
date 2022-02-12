@@ -92,6 +92,10 @@ function LogToElastic{
                 AuthenticationType = $authType
             }
             GitInfo = @{
+               Collection= $env:System_CollectionUri
+               Project= $env:System_TeamProject
+               Repository= $env:Build_Repository_Name
+               Pipeline= $env:System_DefinitionId	
                CommitId = $env:Build_SourceVersion
                Branch = $env:Build_SourceBranchName
             }    
@@ -108,7 +112,7 @@ function LogToElastic{
         }
         catch{
             if($_.Exception.Response.StatusCode.value__ -ge 300){
-                Write-Output "Index doest not exist"
+                Write-Output "Index does not exist"
                 Invoke-RestMethod -Method Put -Headers $headers -Uri $elasticUrl
                 Write-Output "Index created"
             }
