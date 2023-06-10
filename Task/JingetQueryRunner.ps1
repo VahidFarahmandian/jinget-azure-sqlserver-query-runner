@@ -48,6 +48,10 @@
     [String] 
     $elasticPassword,
 
+    [Parameter(Mandatory = $False)]
+    [String] 
+    $indexName="jinget.query.runner",
+
     [Parameter(Mandatory = $True)]
     [String] 
     $autoCommitEnabled='false',
@@ -101,7 +105,6 @@ function LogToElastic{
             }    
         }
 
-        $indexName = 'jinget.query.executer'
         $elasticUrl = $elasticUrl+'/'+$indexName
         $headers = @{
             'Authorization' = 'Basic ' + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$($elasticUsername):$($elasticPassword)"))

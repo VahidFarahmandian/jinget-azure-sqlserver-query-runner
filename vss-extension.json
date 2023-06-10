@@ -1,20 +1,45 @@
 {
     "manifestVersion": 1,
-    "id": "JingetQueryExecutor",
-    "name": "Jinget Query Executor",
-    "version": "5.1.0",
+    "id": "JingetQueryRunner",
+    "name": "Jinget Query Runner",
+    "version": "1.0.2",
     "publisher": "VahidFarahmandian",
+    "description": "Using this extension, you can run various queries on SQL Server databases",
+    "public": true,
+    "branding": {
+        "color": "rgb(1, 10, 37)",
+        "theme": "dark"
+    },
+    "links": {
+        "home": {
+            "uri": "https://jinget.ir"
+        },
+        "repository": {
+            "uri": "https://github.com/VahidFarahmandian/jinget-azure-sqlserver-query-runner"
+        },
+        "issues": {
+            "uri": "https://github.com/VahidFarahmandian/jinget-azure-sqlserver-query-runner/issues"
+        }
+    },
+    "repository": {
+        "type": "git",
+        "uri": "https://github.com/VahidFarahmandian/jinget-azure-sqlserver-query-runner"
+    },
     "targets": [
         {
             "id": "Microsoft.VisualStudio.Services"
         }
-    ],    
-    "description": "Executes TSQL queries",
+    ],
     "categories": [
         "Azure Pipelines"
     ],
+    "tags": [
+        "sql server",
+        "sql",
+        "query"
+    ],
     "icons": {
-        "default": "images/extension-icon.png"        
+        "default": "images/extension-icon.png"
     },
     "files": [
         {
@@ -23,7 +48,7 @@
     ],
     "contributions": [
         {
-            "id": "JingetQueryExecutor",
+            "id": "JingetQueryRunner",
             "type": "ms.vss-distributed-task.task",
             "targets": [
                 "ms.vss-distributed-task.tasks"
@@ -32,5 +57,10 @@
                 "name": "Task"
             }
         }
-    ]
+    ],
+    "content": {
+        "details": {
+            "path": "overview.md"
+        }
+    }
 }

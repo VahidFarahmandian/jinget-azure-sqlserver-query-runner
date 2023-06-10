@@ -1,13 +1,13 @@
 {
-    "id": "e6b49154-896e-475d-ab12-c5646c6abd5c",
-    "name": "JingetQueryExecutor",
-    "friendlyName": "Jinget Query Executor",
-    "description": "Executes TSQL queries",
+    "id": "c99695f1-d1b8-46f2-95ec-3f8e1f3b7d03",
+    "name": "JingetQueryRunner",
+    "friendlyName": "Jinget Query Runner",
+    "description": "Using this extension, you can run various queries on SQL Server databases",
     "helpMarkDown": "More information: contact farahmandian2011@gmail.com",
     "category": "Utility",
     "author": "Vahid Farahmandian",
     "version": {
-        "Major": 5,
+        "Major": 1,
         "Minor": 0,
         "Patch": 0
     },
@@ -16,7 +16,7 @@
         "Release"
     ],
     "minimumAgentVersion": "1.0.0",
-    "instanceNameFormat": "Execute queries on $(instance)",
+    "instanceNameFormat": "Run queries on $(instance)",
     "groups": [
         {
             "name": "databaseOptions",
@@ -39,14 +39,15 @@
             "name": "basePath",
             "type": "filePath",
             "label": "root folder",
-            "helpMarkDown": "root folder contains scripts folder(To be Executed, Executed, Results)",
+            "helpMarkDown": "root folder contains scripts folder",
             "required": true,
             "defaultValue": ""
         },
         {
             "name": "environment",
             "type": "pickList",
-            "label": "Execution Environment",
+            "label": "Running Environment",
+            "helpMarkDown": "For the staging environment, the 'To Be Executed' folder contains the scripts to be run. The 'Staging Results' folder contains the output of scripts that ran successfully. The 'Staging Errors' folder contains errors that occurred after the scripts were executed. The 'To Production' folder contains scripts that have been successfully executed, so they are automatically moved to this folder and ready for production execution. For a production environment, new scripts should be placed in the 'To Production' folder, the 'Production Results' folder contains the output of the scripts, the 'Production Errors' folder contains the errors that occurred while running the scripts, and the 'Production Executed' folder contains the scripts which have been successfully executed in the production environment.",
             "required": true,
             "options": {
                 "staging": "Staging",
@@ -57,7 +58,7 @@
             "name": "resultRetentionDays",
             "type": "string",
             "label": "result retention in days",
-            "helpMarkDown": "files older than this value, will removed",
+            "helpMarkDown": "How many days will the results of the queries be kept?",
             "required": false,
             "defaultValue": "0"
         },
@@ -67,7 +68,7 @@
             "label": "SQL Server instance",
             "required": true,
             "defaultValue": "",
-            "groupName":"databaseOptions"
+            "groupName": "databaseOptions"
         },
         {
             "name": "authType",
@@ -78,7 +79,7 @@
                 "SQL": "SQL Server Authentication",
                 "Integrated": "Windows Authentication"
             },
-            "groupName":"databaseOptions"
+            "groupName": "databaseOptions"
         },
         {
             "name": "dbName",
@@ -86,7 +87,7 @@
             "label": "Database name",
             "required": false,
             "defaultValue": "",
-            "groupName":"databaseOptions"
+            "groupName": "databaseOptions"
         },
         {
             "name": "dbUser",
@@ -96,7 +97,7 @@
             "required": false,
             "defaultValue": "",
             "visibleRule": "authType = SQL",
-            "groupName":"databaseOptions"
+            "groupName": "databaseOptions"
         },
         {
             "name": "dbPassword",
@@ -106,13 +107,14 @@
             "required": false,
             "defaultValue": "",
             "visibleRule": "authType = SQL",
-            "groupName":"databaseOptions"
+            "groupName": "databaseOptions"
         },
         {
             "name": "elasticLogEnabled",
             "type": "boolean",
-            "label": "Log to Elastic?",
-            "groupName":"elasticOptions"
+            "label": "Log to Elasticsearch?",
+            "helpMarkDown": "Should the details of query execution be recorded in the Elasticsearch database?",
+            "groupName": "elasticOptions"
         },
         {
             "name": "elasticUrl",
@@ -120,27 +122,36 @@
             "label": "Elastic URL",
             "defaultValue": "",
             "visibleRule": "elasticLogEnabled = true",
-            "groupName":"elasticOptions"
+            "groupName": "elasticOptions"
         },
         {
             "name": "elasticUsername",
             "type": "string",
             "label": "Elstic username",
             "visibleRule": "elasticLogEnabled = true",
-            "groupName":"elasticOptions"
+            "groupName": "elasticOptions"
         },
         {
             "name": "elasticPassword",
             "type": "string",
             "label": "Elastic password",
             "visibleRule": "elasticLogEnabled = true",
-            "groupName":"elasticOptions"
+            "groupName": "elasticOptions"
+        },
+        {
+            "name": "indexName",
+            "type": "string",
+            "label": "Index Name",
+            "defaultValue": "jinget.query.runner",
+            "visibleRule": "elasticLogEnabled = true",
+            "groupName": "elasticOptions"
         },
         {
             "name": "autoCommitEnabled",
             "type": "boolean",
-            "label": "Auto commit changes?",
-            "groupName":"gitOptions"
+            "label": "Auto commit",
+            "helpMarkDown": "Will the changes made during the execution of the query be committed again in the repository?",
+            "groupName": "gitOptions"
         },
         {
             "name": "autoCommitBranchName",
@@ -148,12 +159,12 @@
             "label": "Destination branch name",
             "defaultValue": "master",
             "visibleRule": "autoCommitEnabled = true",
-            "groupName":"gitOptions"
+            "groupName": "gitOptions"
         }
     ],
     "execution": {
         "PowerShell": {
-            "target": "$(currentDirectory)\\JingetQueryExecutor.ps1",
+            "target": "$(currentDirectory)\\JingetQueryRunner.ps1",
             "argumentFormat": "",
             "workingDirectory": ""
         }
