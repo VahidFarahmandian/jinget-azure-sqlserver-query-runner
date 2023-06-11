@@ -38,10 +38,10 @@
         {
             "name": "basePath",
             "type": "filePath",
-            "label": "root folder",
-            "helpMarkDown": "root folder contains scripts folder",
+            "label": "Root Folder",
+            "helpMarkDown": "Root folder contains scripts folder",
             "required": true,
-            "defaultValue": ""
+            "defaultValue": "$(System.DefaultWorkingDirectory)"
         },
         {
             "name": "environment",
@@ -57,7 +57,7 @@
         {
             "name": "resultRetentionDays",
             "type": "string",
-            "label": "result retention in days",
+            "label": "Result Retention(Days)",
             "helpMarkDown": "How many days will the results of the queries be kept?",
             "required": false,
             "defaultValue": "0"
