@@ -124,8 +124,16 @@ function LogToElastic{
         $elasticUrl = $elasticUrl+'/_doc'
         $jsonData = ConvertTo-Json $data -Compress
         
-        Invoke-RestMethod -Method Post -Headers $headers -Uri $elasticUrl -Body $jsonData -ContentType 'application/json; charset=utf-8' 
-        Write-Output "Operation logged in index successfully"
+        try{
+            Invoke-RestMethod -Method Post -Headers $headers -Uri $elasticUrl -Body $jsonData -ContentType 'application/json; charset=utf-8'  
+            Write-Output "Operation logged in index successfully"
+        }
+        catch{
+            Write-Output "Operation logged in index failed"
+            $jsonData = "body trimmed by jinget due to an error while logging the data. possible reason is huge size of data. Please check the data size that is being logged."
+            Invoke-RestMethod -Method Post -Headers $headers -Uri $elasticUrl -Body $jsonData -ContentType 'application/json; charset=utf-8'  
+            Write-Output "Operation logged in index successfully with trimmed json data"
+        }
     }
 }
 
