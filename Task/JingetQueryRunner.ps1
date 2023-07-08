@@ -110,8 +110,9 @@ function LogToElastic{
             'Authorization' = 'Basic ' + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$($elasticUsername):$($elasticPassword)"))
         }
         try{
-            Invoke-RestMethod -Method Get -Headers $headers -Uri $elasticUrl
             Write-Output "Check if index exists"
+            Invoke-RestMethod -Method Get -Headers $headers -Uri $elasticUrl
+            Write-Output "Index exists"
         }
         catch{
             if($_.Exception.Response.StatusCode.value__ -ge 300){
