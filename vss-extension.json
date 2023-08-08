@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "JingetQueryRunner",
     "name": "Jinget Query Runner",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "publisher": "VahidFarahmandian",
     "description": "Using this extension, you can run various queries on SQL Server databases",
     "public": true,
