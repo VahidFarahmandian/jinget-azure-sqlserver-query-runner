@@ -9,7 +9,7 @@
     "version": {
         "Major": 1,
         "Minor": 0,
-        "Patch": 0
+        "Patch": 1
     },
     "visibility": [
         "Build",
@@ -68,6 +68,14 @@
             "label": "SQL Server instance",
             "required": true,
             "defaultValue": "",
+            "groupName": "databaseOptions"
+        },
+        {
+            "name": "queryTimeout",
+            "type": "string",
+            "label": "Query Timeout",
+            "required": true,
+            "defaultValue": "60",
             "groupName": "databaseOptions"
         },
         {

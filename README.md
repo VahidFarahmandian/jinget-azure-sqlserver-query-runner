@@ -29,6 +29,8 @@ One of the most important challenges related to SQL Server databases during the 
 
 **Database Name (Required):** The name of the database which we want to execute query against it. 
 
+**Query Timeout (Required):** Specifies the number of seconds before the queries time out. The timeout must be an integer value between 1 and 65535. 
+
 **Database login name:** Username used for 'SQL Authentication'.
 
 **Database login password:** Password used for 'SQL Authentication'

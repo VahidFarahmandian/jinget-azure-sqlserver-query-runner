@@ -10,6 +10,10 @@
 
     [Parameter(Mandatory = $True)]
     [String] 
+    $queryTimeout,
+
+    [Parameter(Mandatory = $True)]
+    [String] 
     $authType,
 
     [Parameter(Mandatory = $False)]
@@ -180,11 +184,15 @@ function ExecuteQuery{
 			Add-Content $filename.FullName "`n GO `n /*Injected By Jinget*/ SELECT @@ROWCOUNT AS EffectedRowsCount /**/"
 		}
 		
+        if($queryTimeout -gt 65535 -or $queryTimeout -lt 0){
+            $queryTimeout = 30
+        }
+
         if($authType -eq "sql"){
-            $queryResult = Invoke-Sqlcmd -OutputAs DataSet -ErrorAction Stop -InputFile $filename.FullName -Database $dbName -ServerInstance $instance -Username $dbUser -Password $dbPassword
+            $queryResult = Invoke-Sqlcmd -OutputAs DataSet -ErrorAction Stop -InputFile $filename.FullName -Database $dbName -ServerInstance $instance -Username $dbUser -Password $dbPassword -QueryTimeout $queryTimeout
         }    
         else{
-            $queryResult = Invoke-Sqlcmd -OutputAs DataSet -ErrorAction Stop -InputFile $filename.FullName -Database $dbName -ServerInstance $instance 
+            $queryResult = Invoke-Sqlcmd -OutputAs DataSet -ErrorAction Stop -InputFile $filename.FullName -Database $dbName -ServerInstance $instance -QueryTimeout $queryTimeout
         }
         
 		for ($i = 0; $i -lt $queryResult.Tables.Count; ++$i) {
